@@ -1,6 +1,15 @@
 import cv2
 import numpy as np
 import time
+from servo_control import setAngle
+from grove.factory import Factory
+
+dobj = Factory.getDisplay("JHD1802")
+rows, cols = dobj.size()
+dobj.setCursor(0, 0)
+dobj.write("Inhaler detected!")
+dobj.setCursor(rows - 1, 0)
+dobj.write("None")
 
 # Load Yolo
 net = cv2.dnn.readNet("yolov3-tiny-custom.weights", "yolov3-tiny-custom.cfg")
@@ -64,7 +73,20 @@ while True:
             color = colors[class_ids[i]]
             cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
             cv2.putText(frame, label + " " + str(round(confidence, 2)), (x, y + 30), font, 2, color, 2)
-
+            
+            if label == "Ventolin":
+                print("Ventolin inhaler detected!")
+                dobj.setCursor(rows - 1, 0)
+                dobj.write("Ventolin")
+                setAngle(type=1, angle=135)
+                setAngle(type=2, angle=90)
+                
+            if label == "Symbicort":
+                print("Symbicort inhaler detected!")
+                dobj.setCursor(rows - 1, 0)
+                dobj.write("Symbicort")
+                setAngle(type=2, angle=45)
+                setAngle(type=1, angle=90)
 
 
     elapsed_time = time.time() - starting_time
@@ -77,3 +99,6 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+setAngle(type=1, angle=90)
+setAngle(type=2, angle=90)
+dobj.clear()
